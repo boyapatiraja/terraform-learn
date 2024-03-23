@@ -5,20 +5,8 @@ provider "aws" {
 
 }
 
-
-variable "aws_subnet_cidr_block"{
-   description = "subnet cidr block"
-}
-
-variable "vpc_cidr_block"{
-   description = "subnet cidr block"
-}
-
-variable "environment"
-    description = "deployment environment"
-
 resource "aws_vpc" "terraform_test"{
-    cidr_block = var.vpc_cidr_block
+    cidr_block = "10.0.0.0/16"
     tags = {
        Name = "terra-test"
        vpc_env = "dev"   }
@@ -27,10 +15,10 @@ resource "aws_vpc" "terraform_test"{
 
 resource "aws_subnet" "dev_subnet-1"{
     vpc_id = aws_vpc.terraform_test.id
-    cidr_block = var.aws_subnet_cidr_block
+    cidr_block = "10.0.10.0/24"
     availability_zone = "ap-south-1a"
     tags = {
-       Name = "var.environment" }
+       Name = "dev.environment" }
 
 }
 
