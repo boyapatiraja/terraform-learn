@@ -55,7 +55,25 @@ resource "aws_default_route_table" "main-rtb" {
    route {
       cidr_block = "0.0.0.0/0"
       gateway_id = aws_internet_gateway.myapp-igw.id
-      }
-
+     
+}
 }
 
+resource "aws_security_group" "myapp-sg"{
+    vpc_id =  aws_vpc.myapp-vpc.id
+    name = "myapp-sg"
+
+    ingress {
+        from_port = "0"
+        to_port = "0"
+        protocol= "All"
+        cidr_blocks = ["0.0.0.0/0"]
+     }
+     
+     egress {
+         from_port = "0"
+         to_port = "0"
+         protocol = "All"
+         cidr_blocks = ["0.0.0.0/0"]
+      }
+}
