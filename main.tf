@@ -5,39 +5,57 @@ provider "aws" {
 
 }
 
-resource "aws_vpc" "terraform_test"{
-    cidr_block = "10.0.0.0/16"
+variable vpc_cidr_block {}
+variable subnet_cidr_block {}
+variable availability_zone {}
+variable env_prefix {}
+
+resource "aws_vpc" "myapp-vpc"{
+    cidr_block = var.vpc_cidr_block
     tags = {
-       Name = "terra-test"
-       vpc_env = "dev"   }
+        Name = "${var.env_prefix}-vpc"}
 }
 
 
-resource "aws_subnet" "dev_subnet-1"{
-    vpc_id = aws_vpc.terraform_test.id
-    cidr_block = "10.0.10.0/24"
-    availability_zone = "ap-south-1a"
+resource "aws_subnet" "myapp_subnet-1"{
+    vpc_id = aws_vpc.myapp-vpc.id
+    cidr_block = var.subnet_cidr_block
+    availability_zone = var.availability_zone
     tags = {
-       Name = "dev.environment" }
+       Name = "${var.env_prefix}-subnet-1" }
 
 }
 
-data "aws_vpc" "existing_vpc" {
-   default = true
-}
+/*resource "aws_route_table" "myapp-rtb"{
+    vpc_id = aws_vpc.myapp-vpc.id
+     
+    route {
+       cidr_block = "0.0.0.0/0"
+       gateway_id = aws_internet_gateway.myapp-igw.id 
+    }
+    tags = {
+       Name = "${var.env_prefix}-rtb" 
+    }
+}*/
 
-resource "aws_subnet" "subnet-2"{
-   vpc_id = data.aws_vpc.existing_vpc.id
-   cidr_block = "172.31.48.0/24"
-   availability_zone =  "ap-south-1b"
+resource "aws_internet_gateway" "myapp-igw"{
+   vpc_id = aws_vpc.myapp-vpc.id
    tags = {
-      Name = "t-subnet1-dev" }
+      Name = "${var.env_prefix}-igw"
+}
 }
 
-output "vpc-id"{
-   value = aws_vpc.terraform_test.id
-}
-output "aws_subnet"{
-value = aws_subnet.dev_subnet-1.id
+/*resource "aws_route_table_association" "a-rtb-subnet" {
+    subnet_id = aws_subnet.myapp_subnet-1.id
+    route_table_id = aws_route_table.myapp-rtb.id
+}*/
+  
+resource "aws_default_route_table" "main-rtb" {
+   default_route_table_id = aws_vpc.myapp-vpc.default_route_table_id
+   route {
+      cidr_block = "0.0.0.0/0"
+      gateway_id = aws_internet_gateway.myapp-igw.id
+      }
+
 }
 
